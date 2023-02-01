@@ -27,9 +27,7 @@ namespace XR.Player
         
         //Input
         public int sensivity_controller_x = 75;
-        public int sensivity_controller_y = 50;
         public int sensivity_mouse_x = 50;
-        public int sensivity_mouse_y = 35;
         //--
         [SerializeField] private float currentX = 0.0f;
 

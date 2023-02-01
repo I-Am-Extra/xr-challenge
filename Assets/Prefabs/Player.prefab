@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 7466464334673133462}
   - component: {fileID: 4848807855673878524}
   - component: {fileID: 3286724118116464607}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -132,6 +132,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef80a340217e9f5499a5506dabf13d8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  score: 0
+  stars: 0
 --- !u!114 &3286724118116464607
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -159,7 +161,7 @@ GameObject:
   - component: {fileID: 7671163450202249915}
   - component: {fileID: 4790532910338676161}
   - component: {fileID: 2459765321653441511}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -272,7 +274,5 @@ MonoBehaviour:
     m_RotationOrder: 4
   zoomTime: 0.75
   sensivity_controller_x: 75
-  sensivity_controller_y: 50
   sensivity_mouse_x: 50
-  sensivity_mouse_y: 75
   currentX: 0
