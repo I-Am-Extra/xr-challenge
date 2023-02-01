@@ -1,9 +1,8 @@
 {
-    "name": "XR.Player",
+    "name": "XR.CoreGame",
     "rootNamespace": "",
     "references": [
-        "GUID:bf009420f90551a4fa7534e507e4453d",
-        "GUID:75469ad4d38634e559750d17036d5f7c"
+        "GUID:3eb8d52be2b21fd449d87a9a65a53239"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
