@@ -18,20 +18,20 @@ namespace XR.Hazards{
         public float viewRadius;
 	    [Range(0,360)] public float viewAngle;
         public Color[] lightColors = new Color[3];
+        public EnemyState state;
         //--
         private NavMeshAgent agent;
         private GameObject mesh;
         private Animator animator;
         private Light viewLight = null;
-        [SerializeField] private EnemyState state;
 
         //Guard
         public int curStar = -1;
         public int patrolTimeSeconds = 5;
         public int patrolRange = 5;
         public GameObject[] stars;
+        public bool seePlayer = false;
         //--
-        [SerializeField] private bool seePlayer = false;
         private GameObject player;
         private CharacterController playerController;
         private GameObject exit;
