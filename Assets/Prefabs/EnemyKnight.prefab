@@ -413,7 +413,7 @@ MonoBehaviour:
   patrolRange: 5
   stars: []
   seePlayer: 0
-  playerSearchTime: 5
+  playerSearchTime: 10
   footstepSounds:
   - {fileID: 8300000, guid: 07a19d2f9b0752b49b6ec2de73ecda76, type: 3}
   - {fileID: 8300000, guid: 1303b3215c5ace745b5655c9ac31d4e2, type: 3}
