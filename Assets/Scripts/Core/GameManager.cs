@@ -12,6 +12,9 @@ namespace XR.CoreGame{
         public GameObject slasherPrefab;
         //--
         private UIManager uiManager;
+        private MusicManager musicManager;
+        private bool playerDetected = false;
+        private int highestDetectionState = -1;
 
         //Player
         private GameObject player; //Player object
@@ -28,6 +31,7 @@ namespace XR.CoreGame{
             player = GameObject.FindWithTag("Player"); //Player object
             pScript = player.GetComponent<PlayerScript>(); //Player Script
             uiManager = FindObjectOfType<UIManager>(); //UI Manager
+            musicManager = FindObjectOfType<MusicManager>(); //Music manager
 
             //Handle Lambda
             //(On Star Picked up)
@@ -67,6 +71,24 @@ namespace XR.CoreGame{
             }
 
             print("END GAME");
+        }
+
+        private void Update()
+        {
+            int highestState = -1;
+            Vector3 ppos = player.transform.position;
+            for (int i=0; i < enemies.Length; i++){
+                bool canSee = enemies[i].seePlayer;
+                if (canSee && playerDetected != canSee)
+                    playerDetected = canSee;
+
+                int enemyState = (int)enemies[i].state;
+                if (enemyState > highestState)
+                    highestState = enemyState;
+            }
+            highestDetectionState = highestState;
+            //--
+            musicManager.SetDetectionState(highestState);
         }
 
     }
