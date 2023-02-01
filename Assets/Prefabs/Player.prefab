@@ -11,10 +11,10 @@ GameObject:
   - component: {fileID: 7073053821795249973}
   - component: {fileID: 7073053821795249972}
   - component: {fileID: 7073053821795249963}
-  - component: {fileID: 7073053821795249962}
   - component: {fileID: 7466464334673133462}
   - component: {fileID: 4848807855673878524}
   - component: {fileID: 3286724118116464607}
+  - component: {fileID: 6097959242135426305}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -88,20 +88,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &7073053821795249962
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7073053821795249961}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 0
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!143 &7466464334673133462
 CharacterController:
   m_ObjectHideFlags: 0
@@ -146,9 +132,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 116dd3de96202ba458e33f1bcb4b6d70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 10
+  speed: 7
   input: {x: 0, y: 0}
   useController: 0
+--- !u!81 &6097959242135426305
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7073053821795249961}
+  m_Enabled: 1
 --- !u!1 &9104475736416343584
 GameObject:
   m_ObjectHideFlags: 0
@@ -159,7 +153,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6802254447664559097}
   - component: {fileID: 7671163450202249915}
-  - component: {fileID: 4790532910338676161}
   - component: {fileID: 2459765321653441511}
   m_Layer: 7
   m_Name: Camera
@@ -226,14 +219,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &4790532910338676161
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9104475736416343584}
-  m_Enabled: 1
 --- !u!114 &2459765321653441511
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -274,5 +259,5 @@ MonoBehaviour:
     m_RotationOrder: 4
   zoomTime: 0.75
   sensivity_controller_x: 75
-  sensivity_mouse_x: 50
+  sensivity_mouse_x: 200
   currentX: 0

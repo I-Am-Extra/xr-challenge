@@ -4,12 +4,11 @@ using UnityEngine;
 using UnityEngine.AI;
 
 namespace XR.Hazards{
-
     public enum EnemyState
     {
-        Guard,
-        Hunt,
-        Chase
+        Guard = 0,
+        Hunt = 1,
+        Chase = 2
     }
 
     public class EnemyMovement : MonoBehaviour
@@ -18,8 +17,12 @@ namespace XR.Hazards{
         public LayerMask ignoreMask;
         public float viewRadius;
 	    [Range(0,360)] public float viewAngle;
+        public Color[] lightColors = new Color[3];
         //--
         private NavMeshAgent agent;
+        private GameObject mesh;
+        private Animator animator;
+        private Light viewLight = null;
         [SerializeField] private EnemyState state;
 
         //Guard
@@ -41,6 +44,12 @@ namespace XR.Hazards{
         private Vector3 lastKnownPos;
         private float startPlayerSearch = -1;
 
+        //Footsteps
+        public AudioClip[] footstepSounds;
+        //--
+        private AudioSource leftFoot;
+        private AudioSource rightFoot;
+
         // Start is called before the first frame update
         void Start()
         {
@@ -49,6 +58,24 @@ namespace XR.Hazards{
             player = GameObject.FindWithTag("Player");
             playerController = player.GetComponent<CharacterController>();
             guardTime = -1;
+
+            //View Light (for vision cone visualisation)
+            mesh = transform.GetChild(0).gameObject;
+            Transform lightParent = mesh.transform.Find("VisionLight");
+            if (lightParent != null){
+                viewLight = lightParent.GetComponent<Light>();
+                viewLight.range = viewRadius + 1;//Make light go slightly further
+                viewLight.spotAngle = viewAngle;
+            }
+            
+            //Animator
+            animator = mesh.GetComponent<Animator>();
+
+            //Footsteps
+            Transform lfoot = transform.Find("LeftFootstep");
+            Transform rfoot = transform.Find("RightFootstep");
+            leftFoot = lfoot.GetComponent<AudioSource>();
+            rightFoot = rfoot.GetComponent<AudioSource>();
             
             ResetState();
         }
@@ -56,6 +83,12 @@ namespace XR.Hazards{
         // Update is called once per frame
         void Update()
         {
+            if (viewLight != null)
+                HandleLightColor();
+
+            //Anims
+            HandleAnimations();
+
             switch (state)
             {
                 case EnemyState.Guard:
@@ -70,6 +103,47 @@ namespace XR.Hazards{
             }
         }
 
+        private void HandleLightColor()
+        {
+            //Set vision cone color based on state
+            Color newCol = lightColors[(int)state];
+            if (viewLight.color != newCol)
+                viewLight.color = newCol;
+        }
+
+        private void HandleAnimations()
+        {
+            float movementSpeed = agent.velocity.magnitude;
+            float mag = (movementSpeed/agent.speed);
+            animator.SetFloat("MovementMagnitude", mag);
+
+            if (movementSpeed > 0.1f)
+                animator.SetBool("moving", true);
+            else
+                animator.SetBool("moving", false);
+        }
+
+        //-----------
+        //FOOTSTEPS
+        public void onLeftFootStomp()
+        {
+            leftFoot.Stop();
+
+            AudioClip clip = footstepSounds[Random.Range(0, footstepSounds.Length)];
+            leftFoot.clip = clip;
+        
+            leftFoot.Play();
+        }
+
+        public void onRightFootStomp()
+        {
+            rightFoot.Stop();
+
+            AudioClip clip = footstepSounds[Random.Range(0, footstepSounds.Length)];
+            rightFoot.clip = clip;
+        
+            rightFoot.Play();
+        }
         //-- -- -- --
         //STATES -- -
         private void ResetState()
@@ -84,11 +158,13 @@ namespace XR.Hazards{
             
             seePlayer = FindPlayerInViewCone();
 
+            //If we see the player engage 
             if (seePlayer){
                 state = EnemyState.Chase;
                 return;
             }
             else if (guardTime < Time.time){
+                //Find a random position near current star to patrol around
                 Vector3 starPos = stars[curStar].transform.position;
                 int rand_x = Random.Range(-patrolRange, patrolRange);
                 int rand_z = Random.Range(-patrolRange, patrolRange);
@@ -140,7 +216,7 @@ namespace XR.Hazards{
                     agent.SetDestination(guardPoint);
                 }
             } else //If we haven't found player, return to guarding
-                state = EnemyState.Guard;
+                ResetState();
         }
 
         private void HandleChase()
