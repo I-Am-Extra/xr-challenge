@@ -87,7 +87,11 @@ namespace XR.Player
         private void HandleMovement()
         {
             Vector3 cam_right = cam.right;
-            Vector3 cam_forward = Vector3.Cross(cam_right, Vector3.up); //Calculate forward as camera forward is messed up in top down
+
+            //Calculate forward vector as camera forward is messed up in top down
+            //Usually it would be Cross (up x right) but Unity uses a left-handed, Y-Up coordinate system
+            //So the formula becomes cross(right, up)
+            Vector3 cam_forward = Vector3.Cross(cam_right, Vector3.up);
             cam_forward.y = 0;
             cam_right.y = 0;
 
@@ -98,7 +102,6 @@ namespace XR.Player
             movementController.Move(move);
         }
         //--------------
-
     }   
 
 }
