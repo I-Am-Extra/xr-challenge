@@ -13,10 +13,11 @@ GameObject:
   - component: {fileID: 7073053821795249963}
   - component: {fileID: 7073053821795249962}
   - component: {fileID: 7466464334673133462}
+  - component: {fileID: 4848807855673878524}
   - component: {fileID: 3286724118116464607}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -119,6 +120,18 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &4848807855673878524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7073053821795249961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef80a340217e9f5499a5506dabf13d8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &3286724118116464607
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -232,7 +245,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lookAt: {fileID: 7073053821795249973}
-  rotateSpeed: 10
   myOffset: {x: 0, y: 0, z: 0}
   curve:
     serializedVersion: 2
@@ -264,4 +276,3 @@ MonoBehaviour:
   sensivity_mouse_x: 50
   sensivity_mouse_y: 75
   currentX: 0
-  currentY: 0
