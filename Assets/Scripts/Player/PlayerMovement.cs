@@ -12,9 +12,13 @@ namespace XR.Player
     {
         //General
         private Transform cam;
+        private GameObject mesh;
+        private Animator animator;
+        private PlayerScript pScript;
 
         //Movement
         public float speed = 10;
+        public float analogRotateSpeed = 200;
         //--
         private CharacterController movementController;
 
@@ -29,19 +33,32 @@ namespace XR.Player
             //Check for controller + set if available
             CheckForController();
 
+            pScript = GetComponent<PlayerScript>();
             movementController = GetComponent<CharacterController>();
             cam = Camera.main.transform;
             //camScript = cam.GetComponent<GameCam>();
+
+            mesh = transform.Find("PlayerMesh").gameObject;
+            animator = mesh.GetComponent<Animator>();
         }
 
         // Update is called once per frame
         void Update()
         {
+            if (pScript.isDead)
+                return;
+
             //Read input every frame
             HandleInput();
 
             //Handle player movement every frame
             HandleMovement();
+
+            //Handle Rotation
+            HandleRotation();
+
+            //Handle animations
+            HandleAnimations();
         }
 
         //--------------
@@ -80,9 +97,9 @@ namespace XR.Player
             else
                 HandleKeyboardInput();
         }
+
         //--------------
         //MOVEMENT------
-
         //Handle main movement
         private void HandleMovement()
         {
@@ -101,7 +118,33 @@ namespace XR.Player
 
             movementController.Move(move);
         }
+
         //--------------
+        //ROTATION
+        private void HandleRotation()
+        {
+            float step = analogRotateSpeed * Time.deltaTime;
+
+            Quaternion camera_face = Quaternion.Euler(0,cam.transform.eulerAngles.y,0);
+
+            Vector3 inputVec = new Vector3(input.x, 0, input.y);
+            if (inputVec != Vector3.zero){
+                Quaternion finalRotation = camera_face * Quaternion.LookRotation(inputVec);
+                Quaternion finalQuat = Quaternion.RotateTowards( transform.rotation, finalRotation, step );
+                transform.rotation = finalQuat;
+            }
+        }
+
+        //--------------
+        //ANIMATIONS
+        private void HandleAnimations()
+        {
+            float movementSpeed = movementController.velocity.magnitude;
+            float mag = movementSpeed / speed;
+
+            animator.SetFloat("MovementMagnitude", mag);
+            animator.SetBool("moving", movementSpeed > 0.1f);
+        }
     }   
 
 }

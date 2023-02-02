@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+//--
 using XR.Player; //Using our player library
 using XR.Hazards;
 
@@ -10,6 +12,8 @@ namespace XR.CoreGame{
         //General
         public int starsNeeded = 5; 
         public GameObject slasherPrefab;
+        [HideInInspector] public bool gameOver = false;
+        public GameObject[] Campspots;
         //--
         private UIManager uiManager;
         private MusicManager musicManager;
@@ -40,13 +44,30 @@ namespace XR.CoreGame{
                 int total = pScript.AddScore( score );
 
                 uiManager.SetScore(total);
+
+                StartCoroutine( DeleteObjectAfterSeconds(pickup.gameObject, 0.75f) );
+
+                if (pScript.stars >= starsNeeded)
+                    MakeEnemiesCamp();
+            };
+
+            pScript.onHit = () => {
+                if (gameOver || pScript.isDead)
+                    return;
+
+                gameOver = true;
+                pScript.KillPlayer(); //Player is dead
+                uiManager.MakeTextFadeIn(); //You are dead text
+
+                StartCoroutine( RestartGameAfterSeconds(5) );
             };
 
             //AI
-            enemies = new EnemyMovement[starsNeeded];
             stars = GameObject.FindGameObjectsWithTag("Star");
+            int starCount = stars.Length;
+            enemies = new EnemyMovement[starCount];
 
-            for(int i = 0; i < starsNeeded; i++)
+            for(int i = 0; i < starCount; i++)
             {
                 GameObject star = stars[i];
                 GameObject enemy = Instantiate(slasherPrefab);
@@ -55,12 +76,29 @@ namespace XR.CoreGame{
                 enemy.transform.position = new Vector3(starPos.x, 0, starPos.z);
 
                 EnemyMovement enemyMovement = enemy.GetComponent<EnemyMovement>();
-                enemyMovement.curStar = i;
-                enemyMovement.stars = stars;
+                enemyMovement.curGuard = star;
 
                 enemies[i] = enemyMovement;
-                print(star);
             }
+        }
+
+        private IEnumerator DeleteObjectAfterSeconds(GameObject obj, float time=1f)
+        {
+            yield return new WaitForSeconds(time);
+
+            Destroy(obj);
+        }
+
+        private IEnumerator RestartGameAfterSeconds(float time)
+        {
+            yield return new WaitForSeconds(time);
+
+            RestartGame();
+        }
+
+        public void RestartGame()
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
         public void onPlayerAttemptExit(GameObject ply)
@@ -70,7 +108,18 @@ namespace XR.CoreGame{
                 return;
             }
 
-            print("END GAME");
+            //End Game
+            gameOver = true;
+
+            uiManager.MakeTextFadeIn(true);
+        }
+
+        private void MakeEnemiesCamp()
+        {
+            print("CAMPING ENEMIES");
+            for (int i=0; i < enemies.Length; i++){
+                enemies[i].curGuard = Campspots[Random.Range(0,Campspots.Length)];
+            }
         }
 
         private void Update()

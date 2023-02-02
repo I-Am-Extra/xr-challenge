@@ -9,6 +9,7 @@ namespace XR.CoreGame{
         public AudioClip[] musicStates = new AudioClip[3];
         [Range(0,100)] public int userMaxVolume = 50;
         //--
+        private bool playingDeath = false;
         private float maxVolume;
         [SerializeField] private int highestDetectionState = -1;
         private int prevDetectionState = -1;
@@ -32,11 +33,14 @@ namespace XR.CoreGame{
         // Update is called once per frame
         void Update()
         {
+            if (playingDeath)
+                return;
+            //-- --
             if (handleStateChange){
                 AudioClip nextClip = musicStates[highestDetectionState];//Music track based on detection status
 
                 //If resetting detection status OR hunting and not seen within 2 seconds
-                //FADE the next track in
+                //FADE the back to undetected track in
                 if (highestDetectionState == 0 || highestDetectionState == 1 && Time.time >= (detectionStateTime+2) ){
                     StartCoroutine( FadeNextTrack(nextClip, 0.3f) );
                     curClip = highestDetectionState + 0;
@@ -76,6 +80,16 @@ namespace XR.CoreGame{
                 handleStateChange = true;
                 detectionStateTime = Time.time;
             }
+        }
+
+        public void PlayDeathSound(AudioClip deathClip)
+        {
+            playingDeath = true;
+            musicPlayer.Stop();
+
+            musicPlayer.volume = maxVolume;
+            musicPlayer.clip = deathClip;
+            musicPlayer.Play();
         }
     }
 }

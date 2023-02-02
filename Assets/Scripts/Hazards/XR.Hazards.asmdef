@@ -2,7 +2,8 @@
     "name": "XR.Hazards",
     "rootNamespace": "",
     "references": [
-        "GUID:8c4dd21966739024fbd72155091d199e"
+        "GUID:8c4dd21966739024fbd72155091d199e",
+        "GUID:3eb8d52be2b21fd449d87a9a65a53239"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
