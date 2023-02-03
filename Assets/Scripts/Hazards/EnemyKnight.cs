@@ -55,7 +55,7 @@ namespace XR.Hazards{
         private void Attack()
         {
             isAttacking = true;
-            swordTrigger.isSwinging = true;
+            //swordTrigger.isSwinging = true;
 
             //Animations
             int rand = Random.Range(1, 3);
@@ -82,6 +82,8 @@ namespace XR.Hazards{
 
         public void onSwingSound()
         {
+            swordTrigger.isSwinging = true;
+            
             //Wep Swing
             AudioClip swingSound = swingSounds[Random.Range(0, swingSounds.Length)];
             swing.clip = swingSound;

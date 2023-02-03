@@ -15,7 +15,7 @@ namespace XR.Hazards{
     public class EnemyMovement : MonoBehaviour
     {
         //General
-        public LayerMask ignoreMask;
+        public LayerMask collisionMask;
         public float viewRadius;
 	    [Range(0,360)] public float viewAngle;
         public Color[] lightColors = new Color[3];
@@ -173,6 +173,34 @@ namespace XR.Hazards{
             state = EnemyState.Guard;
         }
 
+        private void CalcNewPatrolSpot(Vector3 startPos, float time, bool useRand=false) //Dont randomize by default
+        {
+            int rand_x = Random.Range(-patrolRange, patrolRange);
+            int rand_z = Random.Range(-patrolRange, patrolRange);
+            Vector3 randomDir = new Vector3(rand_x, 0, rand_z);
+            guardPoint = startPos + randomDir;
+
+            RaycastHit hit;
+            bool hitPoint = Physics.Raycast(startPos, randomDir.normalized, out hit);
+            if (hitPoint)
+                guardPoint = hit.point + (hit.normal * 1.5f);
+
+            if (useRand)
+                time = Random.Range( time*.25f, time+1 );
+
+            guardPoint.y = transform.position.y;
+            guardTime = Time.time + time;
+
+            agent.ResetPath();
+            agent.SetDestination(guardPoint);
+        }
+
+        public void SetCurGuarding(GameObject obj)
+        {
+            curGuard = obj;
+            guardTime = -1f; //Reset patrol time
+        }
+
         private void HandleGuard()
         {
             seePlayer = FindPlayerInViewCone();
@@ -191,15 +219,7 @@ namespace XR.Hazards{
                 else
                     starPos = transform.position;
 
-                int rand_x = Random.Range(-patrolRange, patrolRange);
-                int rand_z = Random.Range(-patrolRange, patrolRange);
-                
-                guardPoint = starPos + new Vector3(rand_x, 0, rand_z);
-                guardPoint.y = transform.position.y;
-                guardTime = Time.time + patrolTimeSeconds;
-
-                agent.ResetPath();
-                agent.SetDestination(guardPoint);
+                CalcNewPatrolSpot(starPos, patrolTimeSeconds, true);
             }
         }
 
@@ -231,15 +251,7 @@ namespace XR.Hazards{
                     //Patrol to a random point near last known position
                     //Change positions every half a second
                     //Do this for the remaining duration of Hunt
-                    int rand_x = Random.Range(-patrolRange, patrolRange);
-                    int rand_z = Random.Range(-patrolRange, patrolRange);
-                    
-                    guardPoint = lastKnownPos + new Vector3(rand_x, 0, rand_z);
-                    guardPoint.y = transform.position.y;
-                    guardTime = Time.time + 0.5f;
-
-                    agent.ResetPath();
-                    agent.SetDestination(guardPoint);
+                    CalcNewPatrolSpot(lastKnownPos, 0.5f);
                 }
             } else //If we haven't found player, return to guarding
                 ResetState();
@@ -252,7 +264,7 @@ namespace XR.Hazards{
 
             //If we see the player, go to where they are running to
             if (seePlayer){
-                Vector3 movementPos = (playerPos + playerController.velocity); //Where player is moving to
+                Vector3 movementPos = playerPos + (playerController.velocity * Time.deltaTime); //Where player is moving to
                 float distToMovePos = Vector3.Distance(transform.position, movementPos);
 
                 //Don't go inside of the player position, but about 2 units away
@@ -296,7 +308,7 @@ namespace XR.Hazards{
                     //Check for obstacles via a raycast towards the player
                     //We ignore the players layer-mask but instead look for collisions on obstacles only
                     //If there is no collision (on obstacles) there must be a clear line of sight
-                    if (!Physics.Raycast (transform.position, playerDir, distToPlayer, ignoreMask))
+                    if (!Physics.Raycast (transform.position, playerDir, distToPlayer, collisionMask))
                         found = true;
                 }
             }

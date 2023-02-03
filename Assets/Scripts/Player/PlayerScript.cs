@@ -14,12 +14,14 @@ namespace XR.Player
         //--
         private GameObject mesh;
         private Animator animator;
+        private NavigationTrail trail;
 
         // Start is called before the first frame update
         void Start()
         {
             mesh = transform.Find("PlayerMesh").gameObject;
             animator = mesh.GetComponent<Animator>();
+            trail = FindObjectOfType<NavigationTrail>();
         }
 
         public int AddScore(int add)
@@ -35,9 +37,17 @@ namespace XR.Player
             onHit?.Invoke();
         }
 
+        public void WinGame()
+        {
+            isDead = true;
+            trail.gameObject.SetActive(false);
+            animator.SetBool("moving",false);
+        }
+
         public void KillPlayer()
         {
             isDead = true;
+            trail.gameObject.SetActive(false);
 
             int rand = Random.Range(1, 3);
             animator.CrossFade("Death" +rand, 0.25f, 0);

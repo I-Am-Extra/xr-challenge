@@ -10,10 +10,10 @@ namespace XR.CoreGame{
     public class GameManager : MonoBehaviour
     {
         //General
-        public int starsNeeded = 5; 
-        public GameObject slasherPrefab;
-        [HideInInspector] public bool gameOver = false;
-        public GameObject[] Campspots;
+        public int starsNeeded = 5; //Stars needed to escape
+        public GameObject slasherPrefab; //Prefab of knight
+        [HideInInspector] public bool gameOver = false; //Game Over?
+        public GameObject[] Campspots; //Spots used to camp exit on stars collected (evil)
         //--
         private UIManager uiManager;
         private MusicManager musicManager;
@@ -51,6 +51,7 @@ namespace XR.CoreGame{
                     MakeEnemiesCamp();
             };
 
+            //On player hit, kill + restart level
             pScript.onHit = () => {
                 if (gameOver || pScript.isDead)
                     return;
@@ -67,6 +68,7 @@ namespace XR.CoreGame{
             int starCount = stars.Length;
             enemies = new EnemyMovement[starCount];
 
+            //For each star, spawn an enemy on it and make them guard it
             for(int i = 0; i < starCount; i++)
             {
                 GameObject star = stars[i];
@@ -76,10 +78,14 @@ namespace XR.CoreGame{
                 enemy.transform.position = new Vector3(starPos.x, 0, starPos.z);
 
                 EnemyMovement enemyMovement = enemy.GetComponent<EnemyMovement>();
-                enemyMovement.curGuard = star;
+                enemyMovement.SetCurGuarding( star );
 
                 enemies[i] = enemyMovement;
             }
+
+            //Nav Trail Config
+            NavigationTrail trailScript = FindObjectOfType<NavigationTrail>();
+            trailScript.starsNeeded = starsNeeded;
         }
 
         private IEnumerator DeleteObjectAfterSeconds(GameObject obj, float time=1f)
@@ -110,33 +116,45 @@ namespace XR.CoreGame{
 
             //End Game
             gameOver = true;
+            pScript.WinGame();
 
-            uiManager.MakeTextFadeIn(true);
+            uiManager.MakeTextFadeIn(true); //Make win text come up
+
+            StartCoroutine( RestartGameAfterSeconds(5) ); //Restart..
         }
 
         private void MakeEnemiesCamp()
         {
-            print("CAMPING ENEMIES");
+            //Make enemies camp exit
             for (int i=0; i < enemies.Length; i++){
-                enemies[i].curGuard = Campspots[Random.Range(0,Campspots.Length)];
+                enemies[i].SetCurGuarding( Campspots[Random.Range(0,Campspots.Length)] );
             }
         }
 
         private void Update()
         {
+            //Loop all enemies and find highest detection state
+            //This is used to handle music
             int highestState = -1;
             Vector3 ppos = player.transform.position;
             for (int i=0; i < enemies.Length; i++){
+                //Make game manager aware of if player is being seen currently
                 bool canSee = enemies[i].seePlayer;
                 if (canSee && playerDetected != canSee)
                     playerDetected = canSee;
 
+                //Get current enemy state
+                //Update highest current value
                 int enemyState = (int)enemies[i].state;
                 if (enemyState > highestState)
                     highestState = enemyState;
             }
+            //0 = Guard
+            //1 = Hunt
+            //2 = Chase
             highestDetectionState = highestState;
             //--
+            //Play appropriate track
             musicManager.SetDetectionState(highestState);
         }
 
