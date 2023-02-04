@@ -7,13 +7,12 @@ namespace XR.CoreGame{
     {
         private GameManager gameManager;
 
-        // Start is called before the first frame update
         void Start()
         {
             gameManager = FindObjectOfType<GameManager>();
         }
 
-        //Upon collision with another GameObject, this GameObject will reverse direction
+        //On Attempting to exit, relay to GameManager..
         private void OnTriggerEnter(Collider other)
         {
             string tag = other.gameObject.tag;

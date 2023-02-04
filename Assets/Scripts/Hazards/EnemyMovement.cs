@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using XR.Player;
 
 namespace XR.Hazards{
     public enum EnemyState
@@ -14,22 +15,25 @@ namespace XR.Hazards{
     public class EnemyMovement : MonoBehaviour
     {
         //General
-        public LayerMask ignoreMask;
+        public LayerMask collisionMask;
         public float viewRadius;
 	    [Range(0,360)] public float viewAngle;
         public Color[] lightColors = new Color[3];
         public EnemyState state;
+        public AudioClip[] spottedGrunts;
         //--
         private NavMeshAgent agent;
         private GameObject mesh;
         private Animator animator;
         private Light viewLight = null;
+        private AudioSource mouth;
+        private float timeLastGrunted = -1f;
+        private PlayerScript pScript;
 
         //Guard
-        public int curStar = -1;
+        public GameObject curGuard;
         public int patrolTimeSeconds = 5;
         public int patrolRange = 5;
-        public GameObject[] stars;
         public bool seePlayer = false;
         //--
         private GameObject player;
@@ -56,7 +60,9 @@ namespace XR.Hazards{
             agent = GetComponent<NavMeshAgent>();
             exit = GameObject.FindWithTag("Exit");
             player = GameObject.FindWithTag("Player");
+            pScript = player.GetComponent<PlayerScript>();
             playerController = player.GetComponent<CharacterController>();
+            mouth = transform.Find("Mouth").GetComponent<AudioSource>();
             guardTime = -1;
 
             //View Light (for vision cone visualisation)
@@ -89,6 +95,7 @@ namespace XR.Hazards{
             //Anims
             HandleAnimations();
 
+            //Handle State
             switch (state)
             {
                 case EnemyState.Guard:
@@ -123,6 +130,21 @@ namespace XR.Hazards{
                 animator.SetBool("moving", false);
         }
 
+        private void DoSpottedGrunt()
+        {
+            //To prevent spam (small 2 second cooldown)
+            if (timeLastGrunted + 2 > Time.time)
+                return;
+
+            //Time
+            timeLastGrunted = Time.time;
+
+            //Play Grunt noise
+            AudioClip grunt = spottedGrunts[Random.Range(0, spottedGrunts.Length)];
+            mouth.clip = grunt;
+            mouth.Play();
+        }
+
         //-----------
         //FOOTSTEPS
         public void onLeftFootStomp()
@@ -151,30 +173,53 @@ namespace XR.Hazards{
             state = EnemyState.Guard;
         }
 
+        private void CalcNewPatrolSpot(Vector3 startPos, float time, bool useRand=false) //Dont randomize by default
+        {
+            int rand_x = Random.Range(-patrolRange, patrolRange);
+            int rand_z = Random.Range(-patrolRange, patrolRange);
+            Vector3 randomDir = new Vector3(rand_x, 0, rand_z);
+            guardPoint = startPos + randomDir;
+
+            RaycastHit hit;
+            bool hitPoint = Physics.Raycast(startPos, randomDir.normalized, out hit);
+            if (hitPoint)
+                guardPoint = hit.point + (hit.normal * 1.5f);
+
+            if (useRand)
+                time = Random.Range( time*.25f, time+1 );
+
+            guardPoint.y = transform.position.y;
+            guardTime = Time.time + time;
+
+            agent.ResetPath();
+            agent.SetDestination(guardPoint);
+        }
+
+        public void SetCurGuarding(GameObject obj)
+        {
+            curGuard = obj;
+            guardTime = -1f; //Reset patrol time
+        }
+
         private void HandleGuard()
         {
-            if (curStar == -1)
-                return;
-            
             seePlayer = FindPlayerInViewCone();
 
             //If we see the player engage 
             if (seePlayer){
+                DoSpottedGrunt();
                 state = EnemyState.Chase;
                 return;
-            }
-            else if (guardTime < Time.time){
+            } else if (guardTime < Time.time){
                 //Find a random position near current star to patrol around
-                Vector3 starPos = stars[curStar].transform.position;
-                int rand_x = Random.Range(-patrolRange, patrolRange);
-                int rand_z = Random.Range(-patrolRange, patrolRange);
-                
-                guardPoint = starPos + new Vector3(rand_x, 0, rand_z);
-                guardPoint.y = transform.position.y;
-                guardTime = Time.time + patrolTimeSeconds;
+                Vector3 starPos;
+                //Check if star is valid (not picked up)
+                if (curGuard != null)
+                    starPos = curGuard.transform.position;
+                else
+                    starPos = transform.position;
 
-                agent.ResetPath();
-                agent.SetDestination(guardPoint);
+                CalcNewPatrolSpot(starPos, patrolTimeSeconds, true);
             }
         }
 
@@ -183,6 +228,7 @@ namespace XR.Hazards{
             //If we see the player we chase them
             seePlayer = FindPlayerInViewCone();
             if (seePlayer){
+                DoSpottedGrunt();
                 state = EnemyState.Chase;
                 return;
             }
@@ -205,15 +251,7 @@ namespace XR.Hazards{
                     //Patrol to a random point near last known position
                     //Change positions every half a second
                     //Do this for the remaining duration of Hunt
-                    int rand_x = Random.Range(-patrolRange, patrolRange);
-                    int rand_z = Random.Range(-patrolRange, patrolRange);
-                    
-                    guardPoint = lastKnownPos + new Vector3(rand_x, 0, rand_z);
-                    guardPoint.y = transform.position.y;
-                    guardTime = Time.time + 0.5f;
-
-                    agent.ResetPath();
-                    agent.SetDestination(guardPoint);
+                    CalcNewPatrolSpot(lastKnownPos, 0.5f);
                 }
             } else //If we haven't found player, return to guarding
                 ResetState();
@@ -221,15 +259,26 @@ namespace XR.Hazards{
 
         private void HandleChase()
         {
-            seePlayer = FindPlayerInViewCone();
+            seePlayer = FindPlayerInViewCone(); //Do we see the player?
             Vector3 playerPos = player.transform.position;
 
             //If we see the player, go to where they are running to
             if (seePlayer){
-                agent.SetDestination(playerPos + playerController.velocity);
-                lastKnownPos = playerPos; //Last known position
-                startPlayerSearch = Time.time; //Will always be exact time in which we last had eyes on player
+                Vector3 movementPos = playerPos + (playerController.velocity * Time.deltaTime); //Where player is moving to
+                float distToMovePos = Vector3.Distance(transform.position, movementPos);
+
+                //Don't go inside of the player position, but about 2 units away
+                if (distToMovePos > 2){
+                    agent.SetDestination(movementPos);
+                    lastKnownPos = playerPos; //Last known position
+                    startPlayerSearch = Time.time; //Will always be exact time in which we last had eyes on player
+                } else { //Otherwise stand still, we are in attack range
+                    agent.velocity = Vector3.zero;
+                    //agent.ResetPath();
+                }
             } else {
+                //If we cannot see the player go into hunt mode
+                //and look at where they were running to
                 agent.ResetPath();
                 transform.LookAt(playerPos + playerController.velocity); //Look at where player is running to
                 state = EnemyState.Hunt; //Hunt player
@@ -239,6 +288,9 @@ namespace XR.Hazards{
         //HELPER
         private bool FindPlayerInViewCone() 
         {
+            if (pScript.isDead)
+                return false;
+            //-- --
             bool found = false;
             float distToPlayer = Vector3.Distance (transform.position, player.transform.position);
 
@@ -256,7 +308,7 @@ namespace XR.Hazards{
                     //Check for obstacles via a raycast towards the player
                     //We ignore the players layer-mask but instead look for collisions on obstacles only
                     //If there is no collision (on obstacles) there must be a clear line of sight
-                    if (!Physics.Raycast (transform.position, playerDir, distToPlayer, ignoreMask))
+                    if (!Physics.Raycast (transform.position, playerDir, distToPlayer, collisionMask))
                         found = true;
                 }
             }

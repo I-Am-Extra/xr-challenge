@@ -6,11 +6,14 @@ namespace XR.Hazards{
     public class EnemyAnimEvents : MonoBehaviour
     {
         private EnemyMovement movement;
+        private EnemyKnight knight;
 
         // Start is called before the first frame update
         void Start()
         {
-            movement = transform.root.GetComponent<EnemyMovement>();
+            Transform parent = transform.root;
+            movement = parent.GetComponent<EnemyMovement>();
+            knight = parent.GetComponent<EnemyKnight>();
         }
 
         public void onLeftFootStomp()
@@ -21,6 +24,21 @@ namespace XR.Hazards{
         public void onRightFootStomp()
         {
             movement.onRightFootStomp();
+        }
+
+        public void swingFinish()
+        {
+            knight.onSwingFinish();
+        }
+
+        public void onSwordHitFloor()
+        {
+            knight.onSwordHitFloor();
+        }
+
+        public void onSwingSound()
+        {
+            knight.onSwingSound();
         }
 
     }
