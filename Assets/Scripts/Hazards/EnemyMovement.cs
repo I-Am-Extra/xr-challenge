@@ -17,10 +17,10 @@ namespace XR.Hazards{
     public class EnemyMovement : MonoBehaviour
     {
         //General
+        [Header("General")]
         public LayerMask collisionMask; //Collision mask for raycast
         public float viewRadius; //View cone radius
 	    [Range(0,360)] public float viewAngle; //View cone angle
-        public Color[] lightColors = new Color[3]; //Colors for 3 states (Guard, Hunt, Chase)
         public EnemyState state; //Current state
         public AudioClip[] spottedGrunts; //Array of grunts (when spotted)
         //--
@@ -33,6 +33,8 @@ namespace XR.Hazards{
         private PlayerScript pScript;
 
         //Guard
+        [Space(3)]
+        [Header("Guard State")]
         [HideInInspector] public GameObject curGuard; //Currently guarding object
         public int patrolTimeSeconds = 5; //Time between patrol points
         public int patrolRange = 5; //Range of patrol from target position
@@ -44,13 +46,21 @@ namespace XR.Hazards{
         private Vector3 guardPoint = Vector3.zero;
         private float guardTime = -1f;
 
+        [Space(3)]
+        [Header("Light Colours")]
+        public Color[] lightColors = new Color[3]; //Colors for 3 states (Guard, Hunt, Chase)
+
         //Chase
+        [Space(3)]
+        [Header("Chase State")]
         [Range(4,15)] public int playerSearchTime = 5; //How long do we search for player?
         //--
         private Vector3 lastKnownPos;
         private float startPlayerSearch = -1;
 
         //Footsteps
+        [Space(3)]
+        [Header("Footsteps")]
         public AudioClip[] footstepSounds; //Footstep audio sounds
         //--
         private AudioSource leftFoot;
@@ -200,7 +210,7 @@ namespace XR.Hazards{
             agent.SetDestination(guardPoint);
         }
 
-        public void SetCurGuarding(GameObject obj)
+        public void SetCurrentGuarding(GameObject obj)
         {
             curGuard = obj;
             guardTime = -1f; //Reset patrol time

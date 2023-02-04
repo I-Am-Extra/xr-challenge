@@ -29,7 +29,7 @@ namespace XR.CoreGame{
 
         private void Start()
         {
-            gameOverPanel.active = false;
+            gameOverPanel.SetActive(false);
             panelImage = gameOverPanel.GetComponent<Image>();
             deathText = gameOverPanel.transform.GetChild(0).GetComponent<TMP_Text>();
             musicManager = FindObjectOfType<MusicManager>();
@@ -68,7 +68,7 @@ namespace XR.CoreGame{
 
         public void MakeTextFadeIn(bool win=false)
         {
-            gameOverPanel.active = true;
+            gameOverPanel.SetActive(true);
             //--
             Color originalCol = failCol;
             string text = loseText;

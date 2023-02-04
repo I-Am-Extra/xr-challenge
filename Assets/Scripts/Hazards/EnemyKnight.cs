@@ -8,12 +8,11 @@ namespace XR.Hazards{
     public class EnemyKnight : MonoBehaviour
     {
         //General
+        [Header("General")]
         [Range(2,5)] public float attackRange = 2.5f; //Range in which knight can attack
-        public AudioClip[] grunts; //All grunt sounds
-        public AudioClip[] swingSounds; //All possible swing sounds
         public GameObject particlePrefab; //Particle on hit
-        public ParticleSystem weaponTrail; //Weapon trail
-        public ParticleSystem weaponGlow; //Sword glow up
+        public ParticleSystem weaponTrail;
+        public ParticleSystem weaponGlow;
         public SwordTrigger swordTrigger; //Used to detect player hit
         //--
         private GameObject mesh;
@@ -22,6 +21,11 @@ namespace XR.Hazards{
         private Animator animator;
         private AudioSource mouth;
         private AudioSource swing;
+
+        //Audio
+        [Header("Audio")]
+        public AudioClip[] grunts; //All grunt sounds
+        public AudioClip[] swingSounds; //All possible swing sounds
 
         //Attack
         private bool isAttacking = false;
@@ -101,9 +105,8 @@ namespace XR.Hazards{
         //Called when sword hits floor
         public void onSwordHitFloor()
         {
-            Vector3 particlePos = transform.position + transform.forward * attackRange;
-            GameObject particleInstance = Instantiate(particlePrefab, particlePos, Quaternion.identity);
-            particleInstance.transform.localRotation = Quaternion.identity;
+            Vector3 particlePos = transform.position + transform.forward * attackRange; //Attack hit spot
+            GameObject particleInstance = Instantiate(particlePrefab, particlePos, Quaternion.identity); //Spawn particle at position
         }
     }
 }
