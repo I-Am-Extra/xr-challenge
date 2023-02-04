@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace XR.Hazards{
+    
+    //This class is used to handle knight attacks / particle effects
     public class EnemyKnight : MonoBehaviour
     {
         //General
-        [Range(2,5)] public float attackRange = 2.5f;
-        public AudioClip[] grunts;
-        public AudioClip[] swingSounds;
-        public GameObject particlePrefab;
-        public ParticleSystem weaponTrail;
-        public ParticleSystem weaponGlow;
-        public SwordTrigger swordTrigger;
+        [Range(2,5)] public float attackRange = 2.5f; //Range in which knight can attack
+        public AudioClip[] grunts; //All grunt sounds
+        public AudioClip[] swingSounds; //All possible swing sounds
+        public GameObject particlePrefab; //Particle on hit
+        public ParticleSystem weaponTrail; //Weapon trail
+        public ParticleSystem weaponGlow; //Sword glow up
+        public SwordTrigger swordTrigger; //Used to detect player hit
         //--
         private GameObject mesh;
         private GameObject player;
@@ -43,10 +45,13 @@ namespace XR.Hazards{
         // Update is called once per frame
         void Update()
         {
+            //If we see the player
             if (movement.seePlayer){
+                //Check if we are in range
                 Vector3 ppos = player.transform.position;
                 float dist = Vector3.Distance(transform.position, ppos);
 
+                //Attack in range
                 if (dist < attackRange && isAttacking == false)
                     Attack();
             }
@@ -71,6 +76,8 @@ namespace XR.Hazards{
             mouth.Play();
         }
 
+        //Called on animation event
+        //On sword finishes swinging
         public void onSwingFinish()
         {
             isAttacking = false;
@@ -80,6 +87,7 @@ namespace XR.Hazards{
             weaponGlow.Stop();
         }
 
+        //Called at top of swing
         public void onSwingSound()
         {
             swordTrigger.isSwinging = true;
@@ -90,6 +98,7 @@ namespace XR.Hazards{
             swing.Play();
         }
 
+        //Called when sword hits floor
         public void onSwordHitFloor()
         {
             Vector3 particlePos = transform.position + transform.forward * attackRange;

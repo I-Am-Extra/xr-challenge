@@ -12,6 +12,8 @@ namespace XR.Hazards{
         Chase = 2
     }
 
+    //This class is used to handle (solely) enemy movement based on view of the player and last known position
+    //The end result is sumarised as a state enum for other scripts to inspect
     public class EnemyMovement : MonoBehaviour
     {
         //General
@@ -122,7 +124,7 @@ namespace XR.Hazards{
         {
             float movementSpeed = agent.velocity.magnitude;
             float mag = (movementSpeed/agent.speed);
-            animator.SetFloat("MovementMagnitude", mag);
+            animator.SetFloat("MovementMagnitude", mag); //Set blend tree value based on cur speed
 
             if (movementSpeed > 0.1f)
                 animator.SetBool("moving", true);
@@ -180,10 +182,11 @@ namespace XR.Hazards{
             Vector3 randomDir = new Vector3(rand_x, 0, rand_z);
             guardPoint = startPos + randomDir;
 
+            //Send a raycast to point we want to go to in case of walls
             RaycastHit hit;
             bool hitPoint = Physics.Raycast(startPos, randomDir.normalized, out hit);
             if (hitPoint)
-                guardPoint = hit.point + (hit.normal * 1.5f);
+                guardPoint = hit.point + (hit.normal * 1.5f); //If a wall exists, move just in front of it
 
             if (useRand)
                 time = Random.Range( time*.25f, time+1 );
