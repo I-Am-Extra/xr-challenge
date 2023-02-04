@@ -17,12 +17,12 @@ namespace XR.Hazards{
     public class EnemyMovement : MonoBehaviour
     {
         //General
-        public LayerMask collisionMask;
-        public float viewRadius;
-	    [Range(0,360)] public float viewAngle;
-        public Color[] lightColors = new Color[3];
-        public EnemyState state;
-        public AudioClip[] spottedGrunts;
+        public LayerMask collisionMask; //Collision mask for raycast
+        public float viewRadius; //View cone radius
+	    [Range(0,360)] public float viewAngle; //View cone angle
+        public Color[] lightColors = new Color[3]; //Colors for 3 states (Guard, Hunt, Chase)
+        public EnemyState state; //Current state
+        public AudioClip[] spottedGrunts; //Array of grunts (when spotted)
         //--
         private NavMeshAgent agent;
         private GameObject mesh;
@@ -33,10 +33,10 @@ namespace XR.Hazards{
         private PlayerScript pScript;
 
         //Guard
-        public GameObject curGuard;
-        public int patrolTimeSeconds = 5;
-        public int patrolRange = 5;
-        public bool seePlayer = false;
+        [HideInInspector] public GameObject curGuard; //Currently guarding object
+        public int patrolTimeSeconds = 5; //Time between patrol points
+        public int patrolRange = 5; //Range of patrol from target position
+        [HideInInspector] public bool seePlayer = false; //Do we see player?
         //--
         private GameObject player;
         private CharacterController playerController;
@@ -45,13 +45,13 @@ namespace XR.Hazards{
         private float guardTime = -1f;
 
         //Chase
-        [Range(4,15)] public int playerSearchTime = 5;
+        [Range(4,15)] public int playerSearchTime = 5; //How long do we search for player?
         //--
         private Vector3 lastKnownPos;
         private float startPlayerSearch = -1;
 
         //Footsteps
-        public AudioClip[] footstepSounds;
+        public AudioClip[] footstepSounds; //Footstep audio sounds
         //--
         private AudioSource leftFoot;
         private AudioSource rightFoot;
@@ -72,6 +72,8 @@ namespace XR.Hazards{
             Transform lightParent = mesh.transform.Find("VisionLight");
             if (lightParent != null){
                 viewLight = lightParent.GetComponent<Light>();
+
+                //Configure spotlight with view cone configurations
                 viewLight.range = viewRadius + 1;//Make light go slightly further
                 viewLight.spotAngle = viewAngle;
             }
