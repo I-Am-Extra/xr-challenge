@@ -12,15 +12,17 @@ namespace XR.Hazards{
         Chase = 2
     }
 
+    //This class is used to handle (solely) enemy movement based on view of the player and last known position
+    //The end result is sumarised as a state enum for other scripts to inspect
     public class EnemyMovement : MonoBehaviour
     {
         //General
-        public LayerMask collisionMask;
-        public float viewRadius;
-	    [Range(0,360)] public float viewAngle;
-        public Color[] lightColors = new Color[3];
-        public EnemyState state;
-        public AudioClip[] spottedGrunts;
+        [Header("General")]
+        public LayerMask collisionMask; //Collision mask for raycast
+        public float viewRadius; //View cone radius
+	    [Range(0,360)] public float viewAngle; //View cone angle
+        public EnemyState state; //Current state
+        public AudioClip[] spottedGrunts; //Array of grunts (when spotted)
         //--
         private NavMeshAgent agent;
         private GameObject mesh;
@@ -31,10 +33,12 @@ namespace XR.Hazards{
         private PlayerScript pScript;
 
         //Guard
-        public GameObject curGuard;
-        public int patrolTimeSeconds = 5;
-        public int patrolRange = 5;
-        public bool seePlayer = false;
+        [Space(3)]
+        [Header("Guard State")]
+        [HideInInspector] public GameObject curGuard; //Currently guarding object
+        public int patrolTimeSeconds = 5; //Time between patrol points
+        public int patrolRange = 5; //Range of patrol from target position
+        [HideInInspector] public bool seePlayer = false; //Do we see player?
         //--
         private GameObject player;
         private CharacterController playerController;
@@ -42,14 +46,22 @@ namespace XR.Hazards{
         private Vector3 guardPoint = Vector3.zero;
         private float guardTime = -1f;
 
+        [Space(3)]
+        [Header("Light Colours")]
+        public Color[] lightColors = new Color[3]; //Colors for 3 states (Guard, Hunt, Chase)
+
         //Chase
-        [Range(4,15)] public int playerSearchTime = 5;
+        [Space(3)]
+        [Header("Chase State")]
+        [Range(4,15)] public int playerSearchTime = 5; //How long do we search for player?
         //--
         private Vector3 lastKnownPos;
         private float startPlayerSearch = -1;
 
         //Footsteps
-        public AudioClip[] footstepSounds;
+        [Space(3)]
+        [Header("Footsteps")]
+        public AudioClip[] footstepSounds; //Footstep audio sounds
         //--
         private AudioSource leftFoot;
         private AudioSource rightFoot;
@@ -70,6 +82,8 @@ namespace XR.Hazards{
             Transform lightParent = mesh.transform.Find("VisionLight");
             if (lightParent != null){
                 viewLight = lightParent.GetComponent<Light>();
+
+                //Configure spotlight with view cone configurations
                 viewLight.range = viewRadius + 1;//Make light go slightly further
                 viewLight.spotAngle = viewAngle;
             }
@@ -122,7 +136,7 @@ namespace XR.Hazards{
         {
             float movementSpeed = agent.velocity.magnitude;
             float mag = (movementSpeed/agent.speed);
-            animator.SetFloat("MovementMagnitude", mag);
+            animator.SetFloat("MovementMagnitude", mag); //Set blend tree value based on cur speed
 
             if (movementSpeed > 0.1f)
                 animator.SetBool("moving", true);
@@ -180,10 +194,11 @@ namespace XR.Hazards{
             Vector3 randomDir = new Vector3(rand_x, 0, rand_z);
             guardPoint = startPos + randomDir;
 
+            //Send a raycast to point we want to go to in case of walls
             RaycastHit hit;
             bool hitPoint = Physics.Raycast(startPos, randomDir.normalized, out hit);
             if (hitPoint)
-                guardPoint = hit.point + (hit.normal * 1.5f);
+                guardPoint = hit.point + (hit.normal * 1.5f); //If a wall exists, move just in front of it
 
             if (useRand)
                 time = Random.Range( time*.25f, time+1 );
@@ -195,7 +210,7 @@ namespace XR.Hazards{
             agent.SetDestination(guardPoint);
         }
 
-        public void SetCurGuarding(GameObject obj)
+        public void SetCurrentGuarding(GameObject obj)
         {
             curGuard = obj;
             guardTime = -1f; //Reset patrol time

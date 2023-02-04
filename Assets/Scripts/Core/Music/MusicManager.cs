@@ -45,7 +45,7 @@ namespace XR.CoreGame{
                 //FADE the back to undetected track in
                 if (highestDetectionState == 0 || highestDetectionState == 1 && Time.time >= (detectionStateTime+2) ){
                     //Update currently playing clip
-                    curClip = highestDetectionState + 0;
+                    curClip = highestDetectionState; //Get copy of int
                     handleStateChange = false;
 
                     //Fade this track in
@@ -55,7 +55,7 @@ namespace XR.CoreGame{
                     //Do not fade, play asap
                     musicPlayer.clip = nextClip;
                     musicPlayer.Play();
-                    curClip = highestDetectionState + 0;
+                    curClip = highestDetectionState;  //Get copy of int
                     handleStateChange = false;
                 }
             }
@@ -84,7 +84,7 @@ namespace XR.CoreGame{
         //Set current detection status
         public void SetDetectionState(int state)
         {
-            prevDetectionState = highestDetectionState + 0;
+            prevDetectionState = highestDetectionState;
             highestDetectionState = state;
             //--
             if (highestDetectionState != prevDetectionState){

@@ -78,7 +78,7 @@ namespace XR.CoreGame{
                 enemy.transform.position = new Vector3(starPos.x, 0, starPos.z);
 
                 EnemyMovement enemyMovement = enemy.GetComponent<EnemyMovement>();
-                enemyMovement.SetCurGuarding( star );
+                enemyMovement.SetCurrentGuarding( star );
 
                 enemies[i] = enemyMovement;
             }
@@ -127,7 +127,7 @@ namespace XR.CoreGame{
         {
             //Make enemies camp exit
             for (int i=0; i < enemies.Length; i++){
-                enemies[i].SetCurGuarding( Campspots[Random.Range(0,Campspots.Length)] );
+                enemies[i].SetCurrentGuarding( Campspots[Random.Range(0,Campspots.Length)] );
             }
         }
 

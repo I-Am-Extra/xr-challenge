@@ -103,7 +103,7 @@ namespace XR.Player
         //Handle main movement
         private void HandleMovement()
         {
-            Vector3 cam_right = cam.right;
+            Vector3 cam_right = cam.right;//Right vector
 
             //Calculate forward vector as camera forward is messed up in top down
             //Usually it would be Cross (up x right) but Unity uses a left-handed, Y-Up coordinate system
@@ -121,15 +121,19 @@ namespace XR.Player
 
         //--------------
         //ROTATION
+
+        //Handle analogue movement (make player face movement direction)
         private void HandleRotation()
         {
-            float step = analogRotateSpeed * Time.deltaTime;
+            float step = analogRotateSpeed * Time.deltaTime; //Rotate speed
+            Quaternion camera_face = Quaternion.Euler(0,cam.transform.eulerAngles.y,0); //Current camera angle without tilt
 
-            Quaternion camera_face = Quaternion.Euler(0,cam.transform.eulerAngles.y,0);
-
-            Vector3 inputVec = new Vector3(input.x, 0, input.y);
+            Vector3 inputVec = new Vector3(input.x, 0, input.y); //Convert input into a normal direction vector
             if (inputVec != Vector3.zero){
+                //Final rotation is current camera angle + angle our controller stick/keyboard input is pointing towards
                 Quaternion finalRotation = camera_face * Quaternion.LookRotation(inputVec);
+
+                //Make it smooth via a lerp
                 Quaternion finalQuat = Quaternion.RotateTowards( transform.rotation, finalRotation, step );
                 transform.rotation = finalQuat;
             }
